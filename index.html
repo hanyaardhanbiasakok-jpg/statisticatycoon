@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistica Tycoon: Cafe Endless</title>
+    <style>
+        :root {
+            --primary: #ff6b81;
+            --secondary: #4ea8de;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --dark: #2f3542;
+            --light: #f1f2f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fad390, #f6b93b);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        #game-container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 550px;
+            overflow: hidden;
+            border: 4px solid var(--dark);
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+            border-bottom: 4px solid var(--dark);
+            text-shadow: 2px 2px var(--dark);
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            background: #dfe6e9;
+            padding: 12px;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 3px solid var(--dark);
+            font-size: 0.9rem;
+        }
+
+        .screen {
+            padding: 20px;
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        h3 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.3rem;
+            border-bottom: 2px dashed #ccc;
+            padding-bottom: 5px;
+        }
+
+        /* CARD STYLE */
+        .card {
+            background: var(--light);
+            border: 3px solid var(--dark);
+            border-radius: 14px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 4px 4px 0 var(--dark);
+        }
+
+        /* MARKET TREN */
+        .tren-box {
+            background: #ffeaa7;
+            border: 3px solid #e1b12c;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        /* INPUT STOK */
+        .stok-control {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .stok-control input {
+            width: 80px;
+            padding: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid var(--dark);
+            border-radius: 8px;
+        }
+
+        /* SIMULASI ANIMASI */
+        .cafe-visual {
+            height: 180px;
+            background: #74b9ff;
+            border-radius: 14px;
+            border: 3px solid var(--dark);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            box-shadow: inset 0 -20px 0 #0984e3;
+        }
+
+        .cafe-building {
+            font-size: 4rem;
+            z-index: 2;
+            margin-bottom: 10px;
+            transition: all 0.5s;
+        }
+
+        .customer {
+            position: absolute;
+            font-size: 2.2rem;
+            bottom: 15px;
+            animation: walkToCafe 2.5s infinite linear;
+            z-index: 1;
+        }
+
+        @keyframes walkToCafe {
+            0% { left: -50px; opacity: 1; }
+            50% { left: 45%; opacity: 1; }
+            55% { left: 45%; opacity: 0; }
+            100% { left: 45%; opacity: 0; }
+        }
+
+        /* DATA VISUALIZATION (Bukan teks membosankan) */
+        .chart-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 120px;
+            padding: 10px;
+            background: #fff;
+            border: 2px solid var(--dark);
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .bar {
+            width: 35px;
+            background: var(--secondary);
+            border: 2px solid var(--dark);
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding-bottom: 5px;
+            transition: height 0.5s ease-out;
+        }
+
+        /* BUTTONS */
+        button {
+            background: var(--success);
+            color: white;
+            border: 3px solid var(--dark);
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 var(--dark);
+            width: 100%;
+            transition: all 0.1s;
+        }
+
+        button:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 var(--dark);
+        }
+
+        .btn-analisis {
+            background: var(--warning);
+            color: var(--dark);
+            margin-top: 10px;
+        }
+
+        /* MODAL POPUP UNTUK ANALISIS */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 10;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            background: white;
+            border: 4px solid var(--dark);
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 10px 0 rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="header">🍹 Statistica Tycoon</div>
+    
+    <div class="stats-bar">
+        <div id="stat-hari">📅 Hari: 1</div>
+        <div id="stat-modal">💰 Rp500.000</div>
+        <div id="stat-level">⭐ Cafe Tenda</div>
+    </div>
+
+    <!-- FASE 1: BELANJA & PREDIKSI -->
+    <div id="screen-persiapan" class="screen active">
+        <div class="tren-box" id="tren-pasar">📢 Tren Hari Ini: Cuaca sangat panas! Remaja suka yang segar.</div>
+        
+        <h3>🛒 Belanja Stok Hari Ini</h3>
+        <p style="font-size: 0.9rem; color: #666;">Gunakan data kemarin atau tebak tren pasar agar stok tidak kurang/mubazir!</p>
+        
+        <div class="card">
+            <div class="stok-control">
+                <span>🧋 Boba (Modal: Rp10k/cup)</span>
+                <input type="number" id="stok-boba" value="0" min="0">
+            </div>
+            <div class="stok-control">
+                <span>🍜 Tteokbokki (Modal: Rp15k/porsi)</span>
+                <input type="number" id="stok-food" value="0" min="0">
+            </div>
+        </div>
+
+        <button onclick="mulaiSimulasiJual()">Buka Pintu Cafe! 🚪▶️</button>
+        <button class="btn-analisis" id="btn-buka-analisis" onclick="bukaModalAnalisis()">🔮 Aktifkan Prediksi Statistik</button>
+    </div>
+
+    <!-- FASE 2: SIMULASI PENJUALAN -->
+    <div id="screen-simulasi" class="screen">
+        <h3>⚡ Cafe Sedang Beroperasi...</h3>
+        <div class="cafe-visual">
+            <div class="customer" id="pembeli">🧑‍🎓</div>
+            <div class="cafe-building" id="visual-cafe">⛺</div>
+        </div>
+        <div class="card" style="margin-top: 15px; text-align: center;">
+            <p id="live-report">Pelanggan mengantre...</p>
+        </div>
+    </div>
+
+    <!-- FASE 3: HASIL HARI INI -->
+    <div id="screen-hasil" class="screen">
+        <h3>📊 Laporan Penjualan Hari Ini</h3>
+        <p style="font-size: 0.9rem;">Grafik jumlah pembeli per jam (Jam 1 - Jam 5):</p>
+        
+        <!-- Grafik Batang Visual -->
+        <div class="chart-container" id="grafik-penjualan">
+            <!-- Diisi via JS -->
+        </div>
+
+        <div class="card" id="rekap-keuangan">
+            <!-- Hasil duit diisi via JS -->
+        </div>
+
+        <button onclick="lanjutHariBerikutnya()">Lanjut ke Hari Berikutnya ☀️</button>
+    </div>
+</div>
+
+<!-- MODAL: FITUR INTELLIGENCE PREDIKSI (STATISTIKA) -->
+<div class="modal" id="modal-analisis">
+    <div class="modal-content">
+        <h3 style="color: var(--secondary);">🔮 Komputer Prediksi Bisnis</h3>
+        <p>Gunakan rumus statistik dari data kemarin untuk membuka <b>rekomendasi stok otomatis yang 100% akurat</b>!</p>
+        
+        <div class="card" style="background: #e8f4f8;">
+            <p><b>Data Grafik Kemarin:</b> <span id="data-kemarin-teks"></span></p>
+            <div style="margin-bottom: 12px;">
+                <label style="font-weight: bold; display:block;">1. Cari Nilai Tengah (MEDIAN) data di atas:</label>
+                <input type="number" id="tebak-median" style="width:100%; padding:8px; border-radius:6px; border:2px solid var(--dark);">
+            </div>
+            <div>
+                <label style="font-weight: bold; display:block;">2. Cari JANGKAUAN (Data Max - Min):</label>
+                <input type="number" id="tebak-range" style="width:100%; padding:8px; border-radius:6px; border:2px solid var(--dark);">
+            </div>
+        </div>
+
+        <button onclick="prosesAnalisis()">Gunakan Analisis Data 📈</button>
+        <button onclick="tutupModalAnalisis()" style="background:#95a5a6; margin-top:5px; padding:8px; font-size:0.9rem;">Tutup</button>
+    </div>
+</div>
+
+<script>
+        // ==================== STATE GAME ORIGINAL ====================
+    let modal = 500000;
+    let hari = 1;
+    let levelCafe = 1; 
+
+    // Data historis awal (Fluktuasi penjualan 5 jam terakhir)
+    let dataBobaKemarin = [10, 15, 12, 15, 18];
+    let dataFoodKemarin = [8, 12, 10, 14, 11];
+    let trenHariIni = "☀️ Cuaca sangat panas! Remaja suka yang segar-segar.";
+
+    // ==================== MODAL PREDIKSI (DIPERBAIKI) ====================
+    function bukaModalAnalisis() {
+        document.getElementById('modal-analisis').style.display = "flex";
+        
+        // Tampilkan data berdasarkan tren hari ini agar sinkron!
+        if (trenHariIni.includes("panas") || trenHariIni.includes("festival")) {
+            document.getElementById('data-kemarin-teks').innerText = `Boba (5 Jam Terakhir): ${dataBobaKemarin.join(", ")} (Tren: Minuman)`;
+        } else {
+            document.getElementById('data-kemarin-teks').innerText = `Tteokbokki (5 Jam Terakhir): ${dataFoodKemarin.join(", ")} (Tren: Makanan Warm)`;
+        }
+    }
+
+    function tutupModalAnalisis() {
+        document.getElementById('modal-analisis').style.display = "none";
+    }
+
+    function prosesAnalisis() {
+        // 1. Tentukan data mana yang sedang dipakai sesuai tren
+        let dataAktif = (trenHariIni.includes("panas") || trenHariIni.includes("festival")) ? dataBobaKemarin : dataFoodKemarin;
+        let jenisMenu = (trenHariIni.includes("panas") || trenHariIni.includes("festival")) ? "boba" : "food";
+        let hargaModalSatuan = (jenisMenu === "boba") ? 10000 : 15000;
+
+        // 2. Hitung Kunci Jawaban Matematika (Median & Range)
+        let sorted = [...dataAktif].sort((a, b) => a - b);
+        let medianAsli = sorted[2]; 
+        let rangeAsli = sorted[4] - sorted[0];
+
+        // 3. Ambil input anak
+        let userMedian = parseInt(document.getElementById('tebak-median').value);
+        let userRange = parseInt(document.getElementById('tebak-range').value);
+
+        if (userMedian === medianAsli && userRange === rangeAsli) {
+            
+            // --- LOGIKA PINTAR: HITUNG BATAS MAKSIMAL SESUAI DOMPET ---
+            // Rumus prediksi statistik: (Median + Range) * Faktor Tren Pasar
+            let faktorTren = trenHariIni.includes("festival") ? 2 : 1.3;
+            let rekomendasiMentah = Math.round((medianAsli + rangeAsli) * faktorTren);
+            
+            // Batasi rekomendasi agar uangnya tidak minus/tekor
+            let maksimalMampuBeli = Math.floor(modal / hargaModalSatuan);
+            let rekomendasiFinal = Math.min(rekomendasiMentah, maksimalMampuBeli);
+
+            if (rekomendasiFinal <= 0) {
+                alert("⚠️ Kas tokomu terlalu kritis! Komputer menyarankan pinjam modal atau kurangi belanjaan dulu.");
+                tutupModalAnalisis();
+                return;
+            }
+
+            alert(`✅ Sinkronisasi Berhasil!\n\nBerdasarkan Tren Hari Ini, Komputer menyarankan stok ${rekomendasiFinal} Pcs ${jenisMenu.toUpperCase()}.\nAngka ini sudah disesuaikan dengan kapasitas sisa modalmu!`);
+            
+            // Isi otomatis ke kolom input game
+            if (jenisMenu === "boba") {
+                document.getElementById('stok-boba').value = rekomendasiFinal;
+                document.getElementById('stok-food').value = 0;
+            } else {
+                document.getElementById('stok-food').value = rekomendasiFinal;
+                document.getElementById('stok-boba').value = 0;
+            }
+
+            document.getElementById('btn-buka-analisis').innerText = "🔮 PREDICTION ACTIVE (Sinkron)";
+            document.getElementById('btn-buka-analisis').style.background = "#2ecc71";
+            tutupModalAnalisis();
+        } else {
+            alert("❌ Data gagal disinkronkan. Rumus Median (Nilai tengah) atau Jangkauan (Max - Min) masih keliru. Coba hitung lagi!");
+        }
+    }
+
+    // ==================== SIMULASI JUALAN (DIPERBAIKI) ====================
+    function mulaiSimulasiJual() {
+        let stokBoba = parseInt(document.getElementById('stok-boba').value) || 0;
+        let stokFood = parseInt(document.getElementById('stok-food').value) || 0;
+
+        let totalBiayaModal = (stokBoba * 10000) + (stokFood * 15000);
+        if (totalBiayaModal > modal) {
+            alert("❌ Uang kas cafe tidak cukup untuk belanja stok sebanyak itu!");
+            return;
+        }
+
+        modal -= totalBiayaModal;
+        updateUI();
+
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-simulasi').classList.add('active');
+
+        // Hitung permintaan pasar yang dinamis & logis berdasarkan tren harian
+        let totalPermintaanBoba = dataBobaKemarin.reduce((a,b)=>a+b, 0);
+        let totalPermintaanFood = dataFoodKemarin.reduce((a,b)=>a+b, 0);
+
+        if (trenHariIni.includes("panas")) {
+            totalPermintaanBoba = Math.round(totalPermintaanBoba * 1.5); // Boba laku keras
+            totalPermintaanFood = Math.round(totalPermintaanFood * 0.4); // Makanan drop
+        } else if (trenHariIni.includes("Hujan")) {
+            totalPermintaanBoba = Math.round(totalPermintaanBoba * 0.5); // Boba drop
+            totalPermintaanFood = Math.round(totalPermintaanFood * 1.6); // Makanan hangat laku keras
+        } else if (trenHariIni.includes("festival")) {
+            totalPermintaanBoba = Math.round(totalPermintaanBoba * 2.2); 
+            totalPermintaanFood = Math.round(totalPermintaanFood * 2.0); 
+        }
+
+        let terjualBoba = Math.min(stokBoba, totalPermintaanBoba);
+        let terjualFood = Math.min(stokFood, totalPermintaanFood);
+        
+        let sisaBoba = stokBoba - terjualBoba;
+        let sisaFood = stokFood - terjualFood;
+        
+        let pendapatan = (terjualBoba * 15000) + (terjualFood * 25000); 
+        modal += pendapatan;
+
+        let pembeliNode = document.getElementById('pembeli');
+        let counter = 0;
+        let interval = setInterval(() => {
+            let emojis = ['🧑‍🎓','👩‍🎓','👨‍🏫','✨'];
+            pembeliNode.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            counter++;
+            if(counter > 3) {
+                clearInterval(interval);
+                tampilkanLaporanHariIni(terjualBoba, sisaBoba, terjualFood, sisaFood, pendapatan);
+            }
+        }, 600);
+    }
+
+    function tampilkanLaporanHariIni(jualBoba, sisaBoba, jualFood, sisaFood, untung) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-hasil').classList.add('active');
+
+        // Regenerasi data statistik baru untuk hari besok (Endless)
+        let acak = () => Math.floor(Math.random() * 12) + 8;
+        dataBobaKemarin = [acak(), acak()+2, acak()-1, acak()+4, acak()];
+        dataFoodKemarin = [acak()-2, acak(), acak()+3, acak()-1, acak()+1];
+
+        // Gambar Grafik Kombinasi
+        let grafikHTML = '';
+        dataBobaKemarin.forEach((val, idx) => {
+            grafikHTML += `
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                    <div style="display:flex; align-items:flex-end; height:80px; gap:2px;">
+                        <div class="bar" style="height:${val*3}px; width:15px; background:var(--secondary); font-size:0.5rem;">${val}</div>
+                        <div class="bar" style="height:${dataFoodKemarin[idx]*3}px; width:15px; background:var(--primary); font-size:0.5rem;">${dataFoodKemarin[idx]}</div>
+                    </div>
+                    <span style="font-size:0.6rem; margin-top:4px;">Jam ${idx+1}</span>
+                </div>`;
+        });
+        document.getElementById('grafik-penjualan').innerHTML = grafikHTML;
+
+        // Teks Hasil Rekap Keuangan
+        let rekapHTML = `
+            <p>💰 <b>Total Omzet:</b> +Rp ${untung.toLocaleString('id-ID')}</p>
+            <p>🧋 <b>Boba Terjual:</b> ${jualBoba} Pcs <span style="color:red;">(Sisa: ${sisaBoba})</span></p>
+            <p>🍜 <b>Tteokbokki Terjual:</b> ${jualFood} Pcs <span style="color:red;">(Sisa: ${sisaFood})</span></p>
+        `;
+        document.getElementById('rekap-keuangan').innerHTML = rekapHTML;
+
+        // Evaluasi Level Toko
+        if (modal > 1500000 && levelCafe === 1) { levelCafe = 2; alert("✨ Upgrade ke Container Box!"); }
+        if (modal > 4000000 && levelCafe === 2) { levelCafe = 3; alert("👑 Upgrade ke Ruko Mewah!"); }
+    }
+
+    function lanjutHariBerikutnya() {
+        hari++;
+        
+        let trenList = [
+            "☀️ Cuaca sangat panas! Remaja suka yang segar-segar.",
+            "🌧️ Hujan deras mengguyur sekolah, anak-anak mencari makanan hangat.",
+            "🎉 Hari terakhir festival sekolah! Pengunjung membeludak 2x lipat!",
+            "📉 Ujian sekolah dimulai, koridor agak sepi hari ini."
+        ];
+        trenHariIni = trenList[Math.floor(Math.random() * trenList.length)];
+        document.getElementById('tren-pasar').innerText = "📢 Tren Hari Ini: " + trenHariIni;
+        
+        // Reset Form & Input Evaluasi Matematika
+        document.getElementById('stok-boba').value = 0;
+        document.getElementById('stok-food').value = 0;
+        document.getElementById('tebak-median').value = '';
+        document.getElementById('tebak-range').value = '';
+        document.getElementById('btn-buka-analisis').innerText = "🔮 Aktifkan Prediksi Statistik";
+        document.getElementById('btn-buka-analisis').style.background = "var(--warning)";
+
+        updateUI();
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-persiapan').classList.add('active');
+    }
+
+    function updateUI() {
+        document.getElementById('stat-hari').innerText = "📅 Hari: " + hari;
+        document.getElementById('stat-modal').innerText = "💰 Rp " + modal.toLocaleString('id-ID');
+        
+        let visualCafe = "⛺"; let namaLevel = "Cafe Tenda";
+        if(levelCafe === 2) { visualCafe = "🎛️"; namaLevel = "Container Box"; }
+        if(levelCafe === 3) { visualCafe = "🏢"; namaLevel = "Ruko Mewah"; }
+        
+        document.getElementById('stat-level').innerText = "⭐ " + namaLevel;
+        document.getElementById('visual-cafe').innerText = visualCafe;
+    }
+</script>
+</body>
+</html>
